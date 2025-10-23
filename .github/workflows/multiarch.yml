@@ -15,8 +15,8 @@ jobs:
     env:
       # --- UPDATED ENVIRONMENT VARIABLES ---
       DOCKER_REPO: 'manojk-oci-local' # Changed from codeninjas-proj-docker-local
-      IMAGE_NAME: 'my-very-coool-2nd-image:${{ github.run_number }}'
-      JF_URL: https://hts2.jfrog.io
+      IMAGE_NAME: 'my-test-oci-image:${{ github.run_number }}'
+      JF_URL: https://yuvi.jfrog.io
       #DOCKER_CLI_EXPERIMENTAL: enabled
 
     steps:
@@ -25,7 +25,7 @@ jobs:
         uses: jfrog/setup-jfrog-cli@v4
         id: setup-cli
         env:
-          JF_URL: https://hts2.jfrog.io
+          JF_URL: https://yuvi.jfrog.io
           JF_PROJECT: ${{ vars.JF_PROJECT }}
         with:
           oidc-provider-name: manojk-oci # Corrected indentation for 'with' block properties
@@ -51,7 +51,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           # FIX: Use only the base JFrog URL for the registry login check.
-          registry: hts2-manojk-oci-local.jfrog.io 
+          registry: yuvi-manojk-oci-local.jfrog.io 
           username: ${{ steps.setup-cli.outputs.oidc-user }}
           password: ${{ steps.setup-cli.outputs.oidc-token }}
       
@@ -67,7 +67,7 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            --tag hts2-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/my-app:4.0 \
+            --tag yuvi-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/my-app:4.0 \
             --push \
             .
 
@@ -78,11 +78,11 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: hts2-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}
+          tags: yuvi-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}
 
       - name: Pull Docker Image for Local Scan
         run: |
-          FULL_IMAGE_TAG="hts2-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
+          FULL_IMAGE_TAG="yuvi-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}"
           echo "Pulling image: $FULL_IMAGE_TAG"
           # The image is pulled from Artifactory, using the authenticated Docker login
           docker pull $FULL_IMAGE_TAG
@@ -90,17 +90,17 @@ jobs:
       #- name: Scan Docker Image
         # This command will now succeed because the image is locally available
        # run: |
-        #  jf docker scan hts2-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}
+        #  jf docker scan yuvi-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}
 
       - name: Scan Docker Image
         run: |
-          jf docker scan hts2-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}
+          jf docker scan yuvi-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}
 
       - name: Add Docker Image to Build Info
         run: |
           echo "Image digest is: ${{ steps.docker_build.outputs.digest }}"
           # Create a simple text file with the full image reference including the digest
-          echo "hts2-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}@${{ steps.docker_build.outputs.digest }}" > image-details.txt
+          echo "yuvi-manojk-oci-local.jfrog.io/${{ env.DOCKER_REPO }}/${{ env.IMAGE_NAME }}@${{ steps.docker_build.outputs.digest }}" > image-details.txt
           # Use this file to add the image details to the JFrog build-info
           jf rt build-docker-create ${{ env.DOCKER_REPO }} --image-file image-details.txt
 
